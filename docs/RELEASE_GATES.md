@@ -1,4 +1,10 @@
-# Remaining release gates — v0.2.0
+# Release gates — v0.3.0 evidence update
+
+Current validation is recorded in [V03_VALIDATION.md](V03_VALIDATION.md). Native Electron local setup/MFA/printer IPC and 90 embedded-runtime backend/domain tests now pass on Linux. An unsigned Windows x64 installer build is part of this handoff; it has not been installed on real Windows. Printer detection, 58/80 mm/A4 layouts, scanner test and configuration reporting are implemented. Physical hardware acceptance remains pending.
+
+The earlier matrix below remains a list of external/commercial release gates, rather than a claim that all have passed. Windows installation/upgrade, code signing, hosting, physical counter devices, independent security review, production capacity, offline cloud sync and advanced integrations still require the evidence described. The dated v0.2 observations below are historical; prefer the v0.3 validation report for present software capabilities.
+
+# Historical v0.2 gate matrix
 
 The connected backend and desktop sources are included. The following are concrete work still required before calling this a released commercial Windows POS. Do not mark these complete without evidence.
 

@@ -41,6 +41,8 @@ try{
   assert.equal(await staffPage.locator('[data-route=settings]').count(),0);assert.equal(await staffPage.locator('[data-route=power]').count(),0);await staff.close();
  }
  pass('Manager, inventory and cashier navigation renders only permitted screens');
+ await adminPage.locator('[data-route=hardware]').click();await adminPage.locator('#scanner-test').fill('001234567890');await adminPage.locator('#scanner-test').press('Enter');await adminPage.locator('#scanner-result').filter({hasText:'001234567890'}).waitFor();
+ await adminPage.locator('#paper-format').selectOption('thermal58');await adminPage.waitForFunction(()=>!!document.getElementById('paper-stylesheet').sheet);await adminPage.locator('[data-action=test-receipt]').click();await adminPage.locator('.receipt').filter({hasText:'NOT A SALE'}).waitFor();await adminPage.locator('#dialog [data-action=close]').click();pass('Hardware screen accepts scanner input, preserves zeroes and opens a non-sale print test');
  await adminPage.locator('[data-route=inventory]').click();await adminPage.locator('[data-action=product-new]').click();
  for(const [name,value] of Object.entries({name:'Browser coffee',sku:'COFFEE-1',barcode:'COFFEE-1',cost:'60',price:'100',stock:'10'}))await adminPage.locator(`#f-${name}`).fill(value);
  await adminPage.locator('#product button[type=submit]').click();await adminPage.locator('#dialog').waitFor({state:'hidden'});await adminPage.getByText('Browser coffee',{exact:true}).waitFor();pass('Create product through the actual inventory form');

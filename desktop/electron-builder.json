@@ -2,11 +2,52 @@
   "appId": "com.sajjadhaider.zentropos",
   "productName": "Zentro - POS",
   "electronVersion": "45.2.1",
-  "electronDist": "desktop/node_modules/electron/dist",
-  "directories": {"output": "release/windows"},
+  "directories": {
+    "output": "release/windows"
+  },
   "asar": true,
-  "files": ["package.json", "desktop/main.mjs", "desktop/preload.cjs", "desktop/desktop-config.json", "server/**/*.mjs", "web/**/*", "src/core.mjs", "src/styles.css", "!**/.env", "!**/.zentro-data/**", "!**/tests/**", "!**/*.sqlite", "!**/*.key"],
-  "win": {"target": [{"target": "nsis", "arch": ["x64"]}], "artifactName": "Zentro-POS-Setup-${version}-${arch}.${ext}"},
-  "nsis": {"oneClick": false, "perMachine": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": true, "createStartMenuShortcut": true, "shortcutName": "Zentro - POS", "deleteAppDataOnUninstall": false},
+  "files": [
+    "package.json",
+    "desktop/main.mjs",
+    "desktop/preload.cjs",
+    "desktop/printer-policy.mjs",
+    "desktop/desktop-config.json",
+    "server/**/*.mjs",
+    "web/**/*",
+    "src/core.mjs",
+    "src/styles.css",
+    "!**/.env",
+    "!**/.zentro-data/**",
+    "!**/tests/**",
+    "!**/*.sqlite",
+    "!**/*.key"
+  ],
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "Zentro-POS-Setup-${version}-${arch}.${ext}",
+    "icon": "desktop/assets/icon.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "Zentro - POS",
+    "deleteAppDataOnUninstall": false,
+    "installerIcon": "desktop/assets/icon.ico",
+    "uninstallerIcon": "desktop/assets/icon.ico",
+    "installerHeaderIcon": "desktop/assets/icon.ico",
+    "installerLanguages": [
+      "en_US"
+    ]
+  },
   "publish": null
 }

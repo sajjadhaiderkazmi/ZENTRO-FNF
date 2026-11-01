@@ -18,5 +18,5 @@ check('developer email link is present',html.includes('href="mailto:sajjadhaider
 const app=await readFile(path.join(root,'src/app.mjs'),'utf8');
 check('no dynamic JavaScript eval',!/\beval\s*\(|new\s+Function\s*\(/.test(app));
 check('demo status visibly disclosed',app.includes('Backend, authentication and cloud sync are not connected.'));
-check('package has zero external dependencies',Object.keys(JSON.parse(await readFile(path.join(root,'package.json'),'utf8')).dependencies).length===0);
+check('runtime cryptography dependency is pinned',JSON.stringify(JSON.parse(await readFile(path.join(root,'package.json'),'utf8')).dependencies)===JSON.stringify({'hash-wasm':'4.12.0'}));
 console.log(`${count-failures}/${count} static checks passed. These are targeted checks, not a penetration test.`);if(failures)process.exitCode=1;

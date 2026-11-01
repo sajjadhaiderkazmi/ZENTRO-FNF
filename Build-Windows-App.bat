@@ -1,16 +1,12 @@
 @echo off
+setlocal
 cd /d "%~dp0"
-echo Configure desktop\desktop-config.json first:
-echo mode=cloud with your HTTPS server URL, or mode=local for a standalone database.
-echo This creates an evaluation installer. Use a signing certificate for commercial distribution.
-call npm --prefix desktop install
-if errorlevel 1 goto failed
-call npm --prefix desktop run dist:win
-if errorlevel 1 goto failed
-echo Build finished. Check release\windows.
+where node >nul 2>nul || (echo Install official Node.js 24.22.1 or later first. & pause & exit /b 1)
+call npm ci --no-audit --no-fund
+if errorlevel 1 exit /b 1
+call npm ci --prefix desktop --no-audit --no-fund
+if errorlevel 1 exit /b 1
+node desktop/build-windows.mjs --unsigned
+if errorlevel 1 exit /b 1
+echo Evaluation installer: release\windows\local
 pause
-exit /b 0
-:failed
-echo Build failed. Read the error above; no completed installer is claimed.
-pause
-exit /b 1

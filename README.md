@@ -2,9 +2,11 @@
 
 Developed By [Sajjad Haider](mailto:sajjadhaiderconnect@gmail.com)
 
-**v0.2.0 — working server-backed evaluation release and Windows desktop build source.**
+**v0.3.0 — desktop compatibility, printer/scanner setup and Windows evaluation packaging.**
 
-This release adds a real backend, persistent company databases, real accounts and a connected interface. It is ready for local evaluation and further release engineering. A compiled/signed Windows installer, a hosted production service, cloud offline synchronization and independent penetration testing are not included. Read `docs/QA_REPORT.md` for exactly what was verified.
+See [Windows and hardware guide](docs/WINDOWS_HARDWARE_GUIDE.md) for the installer, printer detection, 58/80 mm layouts, scanner testing and remaining physical acceptance checks. See [v0.3 validation](docs/V03_VALIDATION.md) for current evidence; older QA reports below describe earlier versions.
+
+This release adds a real backend, persistent company databases, real accounts and a connected interface. It is ready for local evaluation and further release engineering. The v0.3 handoff adds a separate unsigned Windows evaluation installer. Signed distribution, a hosted production service, cloud offline synchronization and independent penetration testing are not included. Read `docs/QA_REPORT.md` for exactly what was verified.
 
 ## Is this computer software?
 
@@ -26,11 +28,12 @@ Install official **Node.js 24.22.1 or a compatible later version**. These instru
 Extract the ZIP, open the `zentro-pos` folder in VS Code, and run:
 
 ```sh
+npm ci
 npm run bootstrap
 npm start
 ```
 
-No `npm install` is required for the root server: it has zero external npm dependencies. Bootstrap runs interactively in the terminal. Choose your Power name, username and a 14–128 character password/passphrase; password input is hidden. There are **no shipped/default accounts** and no public web setup endpoint.
+Run `npm ci` first. The root server pins `hash-wasm@4.12.0` for compatible Argon2id hashing in Electron; the Node server uses native Argon2. Bootstrap runs interactively in the terminal. Choose your Power name, username and a 14–128 character password/passphrase; password input is hidden. There are **no shipped/default accounts** and no public web setup endpoint.
 
 Open `http://127.0.0.1:4173`. Leave company code empty to sign in as Power. At first sign-in, add the displayed MFA secret to an authenticator app and verify its six-digit code. Save the eight one-time recovery codes privately. This release displays the manual authenticator setup key; it does not render a QR code.
 
@@ -84,7 +87,7 @@ npm run desktop
 npm --prefix desktop run dist:win
 ```
 
-`Build-Windows-App.bat` runs the install/build steps. Expected output: `release/windows/Zentro-POS-Setup-0.2.0-x64.exe`. **That file is not present in this source ZIP.** Electron 45.2.1 and electron-builder 26.18.0 are pinned in the desktop package. A desktop dependency lockfile is not supplied because this build environment could not resolve/install that dependency tree; generate and retain it on the build machine, audit the resolved tree and use `npm ci` for subsequent builds.
+`Build-Windows-App.bat` runs the install/build steps. Expected output: `release/windows/Zentro-POS-Setup-0.2.0-x64.exe`. **Installers are delivered separately from the source ZIP. The v0.3 local build produces `release/windows/local/Zentro-POS-local-Setup-0.3.0-x64.exe`.** Electron 45.2.1 and electron-builder 26.18.0 are pinned in the desktop package. A desktop dependency lockfile is now supplied; use `npm ci --prefix desktop`. See the v0.3 validation report for the build-tool audit limitations.
 
 Unsigned builds are for evaluation. For signed release, provision your own trusted Windows signing certificate through protected build environment variables and run `npm --prefix desktop run dist:win:signed`. The script requires a signing configuration and forces signing. Never commit the certificate/password or include it in this ZIP. See `docs/RELEASE_GATES.md`.
 

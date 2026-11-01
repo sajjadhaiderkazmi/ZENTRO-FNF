@@ -1,6 +1,6 @@
 {
   "name": "zentro-pos",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Zentro - POS server-backed retail workspace with Windows desktop build source",
   "type": "module",
@@ -27,7 +27,8 @@
     "name": "Sajjad Haider",
     "email": "sajjadhaiderconnect@gmail.com"
   },
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "hash-wasm": "4.12.0"
+  },
   "main": "desktop/main.mjs"
 }

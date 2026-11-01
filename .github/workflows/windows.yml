@@ -1,0 +1,29 @@
+name: Windows evaluation installer
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['desktop/**', 'server/**', 'web/**', 'src/core.mjs', 'src/styles.css', 'package.json', '.github/workflows/windows.yml']
+permissions:
+  contents: read
+jobs:
+  windows-local:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.2'
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run check
+      - run: npm ci --prefix desktop --no-audit --no-fund
+      - run: node desktop/build-windows.mjs --unsigned
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Zentro-POS-Windows-x64-evaluation
+          path: |
+            release/windows/local/*.exe
+            release/windows/local/*.sha256
+          if-no-files-found: error

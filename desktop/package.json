@@ -1,16 +1,20 @@
 {
   "name": "zentro-pos-desktop-build",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Windows desktop build tooling for Zentro - POS",
   "scripts": {
     "start": "electron ..",
     "dist:win": "electron-builder --projectDir .. --config desktop/electron-builder.json --win nsis --x64 --publish never",
-    "dist:win:signed": "node build-signed.mjs"
+    "dist:win:signed": "node build-signed.mjs",
+    "dist:win:local": "node build-windows.mjs --unsigned",
+    "dist:win:cloud": "node build-windows.mjs --unsigned --cloud"
   },
   "devDependencies": {
     "electron": "45.2.1",
     "electron-builder": "26.18.0"
   },
-  "engines": {"node": ">=24.22.1"}
+  "engines": {
+    "node": ">=24.22.1"
+  }
 }
