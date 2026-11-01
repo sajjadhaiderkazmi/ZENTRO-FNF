@@ -47,7 +47,7 @@ CHROMIUM_PATH=/usr/bin/chromium node scripts/ui-smoke.mjs
 # Optional: set ZEN_UI_ARTIFACT_DIR to save screenshots.
 ```
 
-The browser test creates no permanent user accounts. Real operators still run `npm run bootstrap` interactively. No test passwords, cookies, MFA seeds or databases are included in the delivered archives.
+The browser test creates no permanent user accounts. Real operators still run `npm run bootstrap` interactively. No real credentials, runtime cookies, generated MFA seeds or databases are included in the delivered archives. Test scripts contain clearly synthetic, disposable fixture passwords.
 
 ## Research used
 
