@@ -47,3 +47,10 @@ th{font-size:11px;color:#59657a;white-space:nowrap;background:#f8faff}td{font-si
 :focus-visible{outline:3px solid #7359dc!important;outline-offset:3px!important}
 @media(max-width:700px){.auth-story{padding:28px 24px;min-height:280px}.auth-story h1{font-size:34px;margin-top:24px}.auth-story p{font-size:13px;max-width:460px;margin-top:18px}.auth-content{padding:32px 24px}.auth-content h2{font-size:27px}.content{padding:24px 16px}.topbar{padding:0 16px}.top-actions .profile-name{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top-actions .profile-role{font-size:10px}.mobile-menu,.mobile-close{min-width:40px;min-height:40px}.heading-actions .btn{min-height:42px}.page-heading .subtitle{font-size:13px}.stat-value{font-size:26px}.stat-top{font-size:11px}.stat-foot{font-size:10px}.live-toolbar{padding:10px 16px}.cart-controls button{min-width:40px;min-height:40px}.payment-button,.category-tab{min-height:44px}.dialog{max-width:calc(100% - 24px)}.app-footer{text-align:left}.live-card-grid{min-width:0}.branch-controls{flex-wrap:wrap;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.product-card{transition:none}.dialog::backdrop{backdrop-filter:none}}
+
+/* Recovery notices live outside the app so typing and carts keep their state. */
+.connection-status{position:sticky;top:0;z-index:60;background:#fff3d6;color:#674606;border-bottom:1px solid #e6c680;padding:12px 24px;font-size:13px;font-weight:550;line-height:1.6;box-shadow:0 2px 8px #30220b0a}
+.blocked-state{max-width:540px;margin:12vh auto;padding:32px;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 35px #202b4010}
+.blocked-state h2{font-size:24px;margin-bottom:16px}.blocked-state p{font-size:14px;color:#59657a;line-height:1.8;margin-bottom:16px}.blocked-state .btn{margin-top:8px}
+@media(max-width:700px){.connection-status{padding:12px 16px;font-size:12px}.blocked-state{margin:10vh 16px;padding:24px}}
+@media print{.connection-status{display:none!important}}
