@@ -1,0 +1,474 @@
+{
+  "name": "Zentro - POS",
+  "version": "0.2.0",
+  "format": "API inventory (not a complete OpenAPI schema)",
+  "basePath": "/api",
+  "cookies": [
+    "zentro_session",
+    "zentro_device"
+  ],
+  "mutationHeaders": {
+    "Origin": "exact configured origin",
+    "X-CSRF-Token": "from /api/session",
+    "Content-Type": "application/json"
+  },
+  "errorShape": {
+    "error": {
+      "code": "HTTP_<status>",
+      "message": "public error text",
+      "requestId": "UUID"
+    }
+  },
+  "notes": [
+    "Server infers company/user from session, never from client companyId.",
+    "Money inputs are major-unit decimal strings; stored/output money is integer minor units.",
+    "All business command payloads optionally include branchId; current access is checked even on idempotent replay.",
+    "No /api/v1, public bootstrap, sync, offline lease or payment-gateway endpoints are implemented."
+  ],
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/api/session",
+      "access": "public",
+      "request": {},
+      "notes": "Returns csrf, authenticated/stage and public user when authenticated; creates an anonymous session if necessary."
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "access": "anonymous/session",
+      "request": {
+        "companyCode": "string; empty for Power",
+        "identifier": "string",
+        "password": "private string"
+      },
+      "notes": "Returns stage authenticated, mfa_enroll or mfa_verify and rotated csrf."
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/mfa/setup",
+      "access": "password-verified mfa_enroll",
+      "request": {},
+      "notes": "Private manual setup secret and otpauth URI; no QR rendering."
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/mfa/verify",
+      "access": "mfa_enroll or mfa_verify",
+      "request": {
+        "code": "TOTP code or one-time recovery code"
+      },
+      "notes": "Returns authenticated stage; enrollment additionally returns recoveryCodes once."
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/logout",
+      "access": "session",
+      "request": {},
+      "notes": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/invitation/accept",
+      "access": "anonymous/session",
+      "request": {
+        "invitationToken": "single-use secret",
+        "activationKey": "required for owner only",
+        "password": "14-128 characters",
+        "deviceLabel": "optional owner terminal name"
+      },
+      "notes": "Owner requires both independent invitation and active activation key; staff invitation needs no activation key."
+    },
+    {
+      "method": "GET",
+      "path": "/api/workspace",
+      "access": "company member",
+      "request": {
+        "branchId": "optional allowed branch ID"
+      },
+      "notes": "Revisioned snapshot. Sales/purchases latest 200; audit latest 150; costs/profit filtered by role; branch assignments checked."
+    },
+    {
+      "method": "GET",
+      "path": "/api/sales",
+      "access": "admin/manager/cashier",
+      "request": {
+        "branchId": "optional allowed branch ID",
+        "q": "invoice/cashier search, optional",
+        "page": "1-based integer",
+        "limit": "1-100; default 50"
+      },
+      "notes": "Returns {sales,page,limit,total}. Cashier sees only own sales; cost redacted."
+    },
+    {
+      "method": "GET",
+      "path": "/api/report",
+      "access": "admin/manager",
+      "request": {
+        "branchId": "optional allowed branch ID",
+        "from": "optional YYYY-MM-DD",
+        "to": "optional YYYY-MM-DD"
+      },
+      "notes": "Full-history report. Monetary output is integer minor units."
+    },
+    {
+      "method": "POST",
+      "path": "/api/command",
+      "access": "company role per action",
+      "request": {
+        "action": "command name",
+        "data": "command payload below"
+      },
+      "notes": "Requires Idempotency-Key: 16-100 URL-safe letters/digits/underscore/hyphen. Same actor/action/payload replay returns stored result, with current branch/role restrictions. Response {ok,result,revision,replayed?}."
+    },
+    {
+      "method": "GET",
+      "path": "/api/team",
+      "access": "admin",
+      "request": {},
+      "notes": "Public user fields and branchIds; no password hashes/secrets."
+    },
+    {
+      "method": "POST",
+      "path": "/api/team/invite",
+      "access": "admin",
+      "request": {
+        "name": "string",
+        "identifier": "username",
+        "role": "admin|manager|inventory|cashier",
+        "branchIds": "optional array; [] defaults non-admin to main branch"
+      },
+      "notes": "Returns invitationToken once, companyCode, identifier, expiresInHours=24. Does not send email."
+    },
+    {
+      "method": "POST",
+      "path": "/api/team/update",
+      "access": "admin",
+      "request": {
+        "id": "same-company user ID",
+        "role": "optional role",
+        "active": "optional boolean",
+        "branchIds": "optional array"
+      },
+      "notes": "Last active admin protected. Revoke all target sessions after update."
+    },
+    {
+      "method": "GET",
+      "path": "/api/devices",
+      "access": "admin",
+      "request": {},
+      "notes": "Returns registered device metadata and current device ID; no token digests."
+    },
+    {
+      "method": "POST",
+      "path": "/api/devices/enroll",
+      "access": "admin",
+      "request": {
+        "activationKey": "private active key",
+        "label": "terminal label"
+      },
+      "notes": "Sets HttpOnly zentro_device cookie; device limit checked."
+    },
+    {
+      "method": "POST",
+      "path": "/api/devices/release",
+      "access": "admin",
+      "request": {
+        "id": "same-company device ID"
+      },
+      "notes": "Revokes device and bound sessions."
+    },
+    {
+      "method": "GET",
+      "path": "/api/platform",
+      "access": "power",
+      "request": {},
+      "notes": "Company/license/device metadata and latest platform audit; no business workspaces or full activation secrets."
+    },
+    {
+      "method": "POST",
+      "path": "/api/platform/company",
+      "access": "power",
+      "request": {
+        "name": "string",
+        "code": "unique lowercase slug 3-32 characters",
+        "owner": "string",
+        "email": "owner email",
+        "adminUsername": "username; default admin",
+        "plan": "label",
+        "expires": "YYYY-MM-DD",
+        "deviceLimit": "1-1000",
+        "userLimit": "1-10000"
+      },
+      "notes": "201 returns companyId/companyCode/adminUsername/activationKey/ownerInvitationToken/24h invitation expiry. No default password."
+    },
+    {
+      "method": "POST",
+      "path": "/api/platform/company/update",
+      "access": "power",
+      "request": {
+        "id": "company ID",
+        "status": "optional active|suspended",
+        "expires": "optional YYYY-MM-DD",
+        "deviceLimit": "optional integer",
+        "userLimit": "optional integer"
+      },
+      "notes": "Renewal updates active license expiry. Cannot reduce limits below active usage. Suspension revokes sessions."
+    },
+    {
+      "method": "POST",
+      "path": "/api/platform/license",
+      "access": "power",
+      "request": {
+        "companyId": "company ID"
+      },
+      "notes": "Replaces key; returns full new activationKey once, revokes old keys."
+    },
+    {
+      "method": "POST",
+      "path": "/api/platform/license/revoke",
+      "access": "power",
+      "request": {
+        "id": "license ID"
+      },
+      "notes": "No active license means business writes stop, reads remain."
+    },
+    {
+      "method": "GET",
+      "path": "/api/export",
+      "access": "admin/manager; inventory role for inventory kind only",
+      "request": {
+        "kind": "inventory|sales|report",
+        "branchId": "optional allowed branch ID",
+        "from": "report date only",
+        "to": "report date only"
+      },
+      "notes": "CSV attachment, formula-leading input protected. Sales exports full selected branch history, not just latest 200. Monetary values in minor units."
+    }
+  ],
+  "commands": {
+    "product.save": {
+      "roles": [
+        "admin",
+        "manager",
+        "inventory"
+      ],
+      "payload": {
+        "id": "optional; edit only",
+        "expectedRevision": "required on edit",
+        "name": "text",
+        "sku": "unique identifier",
+        "barcode": "Code39-compatible identifier",
+        "category": "text",
+        "unit": "text",
+        "cost": "major-unit decimal string",
+        "price": "positive major-unit decimal string",
+        "stock": "opening integer only",
+        "low": "nonnegative integer",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "product.archive": {
+      "roles": [
+        "admin",
+        "manager",
+        "inventory"
+      ],
+      "payload": {
+        "id": "product ID; toggles archive/restore",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "stock.adjust": {
+      "roles": [
+        "admin",
+        "manager",
+        "inventory"
+      ],
+      "payload": {
+        "productId": "ID",
+        "stock": "counted nonnegative integer",
+        "reason": "text",
+        "expectedRevision": "workspace revision",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "purchase.receive": {
+      "roles": [
+        "admin",
+        "manager",
+        "inventory"
+      ],
+      "payload": {
+        "productId": "ID",
+        "qty": "positive integer",
+        "cost": "unit purchase cost major decimal",
+        "supplier": "supplier text",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "customer.save": {
+      "roles": [
+        "admin",
+        "manager",
+        "cashier"
+      ],
+      "payload": {
+        "id": "optional for edit",
+        "name": "text",
+        "phone": "unique same-company phone",
+        "city": "optional text",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "customer.archive": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "id": "customer ID; must have zero balance",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "customer.collect": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "id": "customer ID",
+        "amount": "positive major-unit decimal <= outstanding",
+        "method": "cash|card|bank",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "sale.complete": {
+      "roles": [
+        "admin",
+        "manager",
+        "cashier"
+      ],
+      "payload": {
+        "lines": "[{productId,qty,free?:boolean}]",
+        "discountBps": "0-10000; admin/manager for nonzero",
+        "method": "cash|card|bank|credit",
+        "tendered": "cash major-unit decimal string",
+        "customerId": "required for credit; optional otherwise",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "sale.return": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "saleId": "ID",
+        "reason": "text",
+        "lines": "[{index:original item index,qty,disposition:resellable|damaged|discarded}]",
+        "method": "cash|card|bank|customer_credit",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "sale.exchange": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "saleId": "non-credit original sale ID",
+        "reason": "text",
+        "lines": "same return lines as sale.return",
+        "newSale": "{lines,discountBps,customerId?}",
+        "tendered": "cash difference received, major-unit decimal",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "expense.create": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "description": "text",
+        "amount": "positive major-unit decimal string",
+        "method": "cash|card|bank",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "settings.save": {
+      "roles": [
+        "admin"
+      ],
+      "payload": {
+        "name": "store text",
+        "address": "text",
+        "phone": "text",
+        "tax": "0-30 percentage decimal string",
+        "timezone": "IANA zone",
+        "receiptNote": "text",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "promotion.save": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "id": "optional existing offer ID",
+        "name": "text",
+        "buyProductId": "ID",
+        "buyQty": "1-1000",
+        "freeProductId": "ID",
+        "freeQty": "1-1000",
+        "start": "YYYY-MM-DD",
+        "end": "YYYY-MM-DD",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "promotion.archive": {
+      "roles": [
+        "admin",
+        "manager"
+      ],
+      "payload": {
+        "id": "offer ID",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "branch.create": {
+      "roles": [
+        "admin"
+      ],
+      "payload": {
+        "name": "unique company branch name",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "shift.open": {
+      "roles": [
+        "admin",
+        "manager",
+        "cashier"
+      ],
+      "payload": {
+        "opening": "nonnegative major-unit decimal string",
+        "branchId": "optional permitted branch ID"
+      }
+    },
+    "shift.close": {
+      "roles": [
+        "admin",
+        "manager",
+        "cashier"
+      ],
+      "payload": {
+        "id": "open shift ID",
+        "counted": "nonnegative major-unit decimal string",
+        "branchId": "optional permitted branch ID"
+      }
+    }
+  }
+}

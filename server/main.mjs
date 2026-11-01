@@ -1,0 +1,12 @@
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createApp} from './app.mjs';
+import {startBackups} from './scheduler.mjs';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),args=process.argv.slice(2),get=(name,fallback)=>args.includes(name)?args[args.indexOf(name)+1]:fallback;
+const port=Number(get('--port',process.env.PORT||4173)),host=get('--host',process.env.ZEN_HOST||'127.0.0.1'),directory=process.env.ZEN_DATA_DIR||path.join(root,'.zentro-data'),publicUrl=get('--public-url',process.env.ZEN_PUBLIC_URL||'');
+if(!Number.isInteger(port)||port<0||port>65535||!['127.0.0.1','localhost','0.0.0.0'].includes(host))throw Error('Invalid server bind configuration.');
+const app=await createApp({directory,port,host,publicUrl,production:process.env.NODE_ENV==='production',trustProxy:process.env.ZEN_TRUST_PROXY==='1'});
+const backups=startBackups(app.store,{passphrase:process.env.ZEN_BACKUP_PASSPHRASE,directory:process.env.ZEN_BACKUP_DIR,hours:process.env.ZEN_BACKUP_INTERVAL_HOURS});
+console.log(`Zentro - POS server ready: ${app.origin}`);
+console.log('No default accounts. Run npm run bootstrap to create the first Power Account.');
+for(const signal of ['SIGINT','SIGTERM'])process.once(signal,async()=>{await backups.stop();await app.close();process.exit(0);});

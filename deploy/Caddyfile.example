@@ -1,0 +1,4 @@
+# Replace this reserved example domain with your actual domain.
+pos.example.com {
+    reverse_proxy 127.0.0.1:4173
+}

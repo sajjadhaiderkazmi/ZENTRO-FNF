@@ -1,0 +1,16 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const css=await readFile(path.join(root,'src/styles.css'),'utf8');
+const sources=await Promise.all(['core.mjs','seed.mjs','app.mjs'].map(f=>readFile(path.join(root,'src',f),'utf8')));
+const js='\n"use strict";\n(()=>{\n'+sources.map(s=>s.replace(/^import .*;\n/gm,'').replace(/^export /gm,'')).join('\n')+'\n})();\n';
+const style='\n'+css+'\n';
+const hash=s=>createHash('sha256').update(s).digest('base64');
+const csp=`default-src 'none'; script-src 'sha256-${hash(js)}'; style-src 'sha256-${hash(style)}'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'`;
+const html=`<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="no-referrer"><meta name="description" content="Zentro - POS — local frontend evaluation kit. Developed By Sajjad Haider."><title>Zentro - POS | Your business, beautifully organized.</title><style>${style}</style></head><body><div id="app"><div class="skeleton">Opening Zentro - POS…</div></div><dialog id="dialog" class="dialog"></dialog><div id="toasts" class="toast-region" aria-live="polite" aria-atomic="false"></div><noscript>This application needs JavaScript enabled.</noscript><script>${js}</script></body></html>\n`;
+await mkdir(path.join(root,'dist'),{recursive:true});
+await writeFile(path.join(root,'dist/index.html'),html);
+await writeFile(path.join(root,'Zentro-POS.html'),html);
+console.log(`Built standalone HTML (${Buffer.byteLength(html).toLocaleString()} bytes). No runtime dependencies.`);

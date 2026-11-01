@@ -1,0 +1,18 @@
+import {createInterface} from 'node:readline/promises';
+import {Writable} from 'node:stream';
+import {stdin,stdout} from 'node:process';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {Store} from './store.mjs';
+import {hashPassword} from './security.mjs';
+import {createBackup,restoreBackup} from './backup.mjs';
+if(!stdin.isTTY)throw Error('Use an interactive operator terminal. Do not put passwords in command arguments.');
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),directory=process.env.ZEN_DATA_DIR||path.join(root,'.zentro-data'),mode=process.argv[2];let muted=false;const output=new Writable({write(c,enc,cb){if(!muted)stdout.write(c);cb();}}),rl=createInterface({input:stdin,output,terminal:true});
+const ask=async(label,secret=false)=>{stdout.write(label);muted=secret;try{return await rl.question('');}finally{muted=false;if(secret)stdout.write('\n');}};
+let store;
+try{
+ if(mode==='backup'){const destination=await ask('New encrypted backup file path: '),phrase=await ask('Backup passphrase (14+ characters): ',true),confirm=await ask('Repeat backup passphrase: ',true);if(phrase!==confirm)throw Error('Passphrases do not match.');store=new Store(directory);await createBackup(store,phrase,path.resolve(destination));console.log('Encrypted backup created. Keep its passphrase separate.');}
+ else if(mode==='restore'){const source=await ask('Encrypted backup file: '),destination=await ask('EMPTY restore directory: '),phrase=await ask('Backup passphrase: ',true);await restoreBackup(path.resolve(source),phrase,path.resolve(destination));console.log('Restored to the new directory. Set ZEN_DATA_DIR to that directory before starting the server.');}
+ else if(mode==='recover'||mode==='recover-mfa'){console.log('Stop the server before account recovery. This operation is restricted by access to the server data directory.');const companyCode=(await ask('Company code (empty for Power Account): ')).trim().toLowerCase(),identifier=(await ask('Username to recover: ')).trim().toLowerCase(),phrase=await ask(mode==='recover-mfa'?'Type RESET PASSWORD AND MFA to confirm: ':'Type RESET PASSWORD to confirm: ');if(phrase!==(mode==='recover-mfa'?'RESET PASSWORD AND MFA':'RESET PASSWORD'))throw Error('Recovery cancelled.');store=new Store(directory);const company=companyCode?store.one('SELECT id FROM companies WHERE code=?',companyCode):null,u=company?store.one('SELECT * FROM users WHERE company_id=? AND identifier=?',company.id,identifier):!companyCode?store.one("SELECT * FROM users WHERE role='power' AND identifier=?",identifier):null;if(!u)throw Error('Account not found.');const password=await ask('New password / passphrase (14–128 characters): ',true),confirm=await ask('Repeat password: ',true);if(password!==confirm)throw Error('Passwords do not match.');const hash=await hashPassword(password);store.transaction(()=>{store.run('UPDATE users SET password_hash=? WHERE id=?',hash,u.id);if(mode==='recover-mfa')store.run("UPDATE users SET mfa_enabled=0,mfa_secret=NULL,last_totp=-1,recovery_hashes='[]' WHERE id=?",u.id);store.revokeUser(u.id);store.platformAudit(u.id,'Operator password recovery',mode==='recover-mfa'?'MFA reset by physical server operator; sessions revoked':'MFA retained; sessions revoked');});console.log(mode==='recover-mfa'?'Password and MFA reset. The admin must enroll a new authenticator at the next login.':'Password reset. Existing MFA remains required; use a saved recovery code if needed.');}
+ else throw Error('Use backup, restore, recover or recover-mfa.');
+}finally{store?.close();rl.close();}

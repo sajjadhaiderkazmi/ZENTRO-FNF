@@ -1,0 +1,22 @@
+import {readFile,readdir} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {spawnSync} from 'node:child_process';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');let failures=0,count=0;
+const check=(label,ok)=>{count++;console.log(`${ok?'PASS':'FAIL'} ${label}`);if(!ok)failures++;};
+for(const folder of ['src','scripts','tests','server','web','desktop'])for(const file of await readdir(path.join(root,folder))){if(file.endsWith('.mjs')||file.endsWith('.cjs')){const p=path.join(root,folder,file);const result=spawnSync(process.execPath,['--check',p],{encoding:'utf8'});check(`JavaScript syntax ${folder}/${file}`,result.status===0);}}
+const html=await readFile(path.join(root,'Zentro-POS.html'),'utf8');const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)],styles=[...html.matchAll(/<style>([\s\S]*?)<\/style>/g)];
+check('standalone bundle contains exactly one script',scripts.length===1);
+for(const [i,s] of scripts.entries())check(`script CSP hash ${i}`,html.includes(`'sha256-${createHash('sha256').update(s[1]).digest('base64')}'`));
+for(const [i,s] of styles.entries())check(`style CSP hash ${i}`,html.includes(`'sha256-${createHash('sha256').update(s[1]).digest('base64')}'`));
+check('no unsafe-inline or unsafe-eval CSP',!html.includes("'unsafe-inline'")&&!html.includes("'unsafe-eval'"));
+check('no inline event-handler attributes',!/<[^>]+\son[a-z]+\s*=/i.test(html));
+check('no external resource URLs in frontend',!/(?:src|href)\s*=\s*["']https?:\/\//i.test(html)&&!/@import|url\(\s*["']?https?:/i.test(styles[0]?.[1]||''));
+check('demo has no outbound network permission',html.includes("connect-src 'none'"));
+check('developer email link is present',html.includes('href="mailto:sajjadhaiderconnect@gmail.com">Developed By Sajjad Haider'));
+const app=await readFile(path.join(root,'src/app.mjs'),'utf8');
+check('no dynamic JavaScript eval',!/\beval\s*\(|new\s+Function\s*\(/.test(app));
+check('demo status visibly disclosed',app.includes('Backend, authentication and cloud sync are not connected.'));
+check('package has zero external dependencies',Object.keys(JSON.parse(await readFile(path.join(root,'package.json'),'utf8')).dependencies).length===0);
+console.log(`${count-failures}/${count} static checks passed. These are targeted checks, not a penetration test.`);if(failures)process.exitCode=1;

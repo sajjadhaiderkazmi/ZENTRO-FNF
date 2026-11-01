@@ -1,0 +1,23 @@
+[Unit]
+Description=Zentro - POS
+After=network.target
+
+[Service]
+Type=simple
+User=zentro
+Group=zentro
+WorkingDirectory=/opt/zentro-pos
+EnvironmentFile=/etc/zentro-pos.env
+ExecStart=/usr/bin/node /opt/zentro-pos/server/main.mjs
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=90
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/zentro-pos /var/backups/zentro-pos
+
+[Install]
+WantedBy=multi-user.target

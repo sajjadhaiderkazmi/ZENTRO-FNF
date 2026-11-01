@@ -1,0 +1,42 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> zentro-pos@0.2.0 check
+> node scripts/check.mjs
+
+PASS JavaScript syntax src/app.mjs
+PASS JavaScript syntax src/core.mjs
+PASS JavaScript syntax src/seed.mjs
+PASS JavaScript syntax scripts/build.mjs
+PASS JavaScript syntax scripts/check.mjs
+PASS JavaScript syntax scripts/make-contract.mjs
+PASS JavaScript syntax scripts/preview-live.mjs
+PASS JavaScript syntax scripts/serve.mjs
+PASS JavaScript syntax scripts/verify-http.mjs
+PASS JavaScript syntax tests/backend.test.mjs
+PASS JavaScript syntax tests/core.test.mjs
+PASS JavaScript syntax server/app.mjs
+PASS JavaScript syntax server/backup.mjs
+PASS JavaScript syntax server/bootstrap.mjs
+PASS JavaScript syntax server/business.mjs
+PASS JavaScript syntax server/main.mjs
+PASS JavaScript syntax server/operator.mjs
+PASS JavaScript syntax server/scheduler.mjs
+PASS JavaScript syntax server/security.mjs
+PASS JavaScript syntax server/store.mjs
+PASS JavaScript syntax web/icons.mjs
+PASS JavaScript syntax web/live.mjs
+PASS JavaScript syntax desktop/build-signed.mjs
+PASS JavaScript syntax desktop/main.mjs
+PASS JavaScript syntax desktop/preload.cjs
+PASS standalone bundle contains exactly one script
+PASS script CSP hash 0
+PASS style CSP hash 0
+PASS no unsafe-inline or unsafe-eval CSP
+PASS no inline event-handler attributes
+PASS no external resource URLs in frontend
+PASS demo has no outbound network permission
+PASS developer email link is present
+PASS no dynamic JavaScript eval
+PASS demo status visibly disclosed
+PASS package has zero external dependencies
+36/36 static checks passed. These are targeted checks, not a penetration test.

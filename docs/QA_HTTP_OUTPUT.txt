@@ -1,0 +1,23 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> zentro-pos@0.2.0 test:http
+> node scripts/verify-http.mjs --self
+
+PASS application returns HTTP 200
+PASS HTML content type
+PASS anti-framing response header
+PASS no-sniff response header
+PASS no-referrer response header
+PASS no-store response header
+PASS HTTP CSP forbids framing
+PASS sensitive browser APIs disabled
+PASS expected application and developer credit
+PASS blocked/unimplemented path /.env
+PASS blocked/unimplemented path /package.json
+PASS blocked/unimplemented path /docs/SECURITY.md
+PASS blocked/unimplemented path /src/../.env
+PASS blocked/unimplemented path /%2e%2e/.env
+PASS blocked/unimplemented path /api/v1/products
+PASS mutating HTTP methods rejected
+PASS HEAD is supported without response body
+17/17 local HTTP checks passed. This static server is not a business backend.

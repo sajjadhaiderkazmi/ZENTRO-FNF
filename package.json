@@ -1,0 +1,33 @@
+{
+  "name": "zentro-pos",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Zentro - POS server-backed retail workspace with Windows desktop build source",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/preview-live.mjs",
+    "start": "node --env-file-if-exists=.env server/main.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "test:http": "node scripts/verify-http.mjs --self",
+    "bootstrap": "node --env-file-if-exists=.env server/bootstrap.mjs",
+    "backup": "node --env-file-if-exists=.env server/operator.mjs backup",
+    "restore": "node --env-file-if-exists=.env server/operator.mjs restore",
+    "recover": "node --env-file-if-exists=.env server/operator.mjs recover",
+    "test:backend": "node --test tests/backend.test.mjs",
+    "demo": "node scripts/serve.mjs",
+    "desktop": "npm --prefix desktop start",
+    "recover:mfa": "node --env-file-if-exists=.env server/operator.mjs recover-mfa"
+  },
+  "engines": {
+    "node": ">=24.22.1"
+  },
+  "author": {
+    "name": "Sajjad Haider",
+    "email": "sajjadhaiderconnect@gmail.com"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "main": "desktop/main.mjs"
+}

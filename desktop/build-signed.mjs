@@ -1,0 +1,10 @@
+import {spawnSync} from 'node:child_process';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+if(process.platform!=='win32')throw Error('Run the Windows release build on Windows.');
+if(!process.env.CSC_LINK&&!process.env.WIN_CSC_LINK)throw Error('Set a valid code-signing certificate through protected build environment variables. No certificate or password should be committed.');
+const dir=path.dirname(fileURLToPath(import.meta.url)),root=path.resolve(dir,'..');
+const cli=path.join(dir,'node_modules/electron-builder/out/cli/cli.js');
+const result=spawnSync(process.execPath,[cli,'--projectDir',root,'--config',path.join(dir,'electron-builder.json'),'--config.forceCodeSigning=true','--win','nsis','--x64','--publish','never'],{stdio:'inherit',cwd:root,env:process.env});
+if(result.error)throw result.error;
+process.exitCode=result.status??1;
